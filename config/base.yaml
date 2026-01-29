@@ -1,0 +1,181 @@
+# PolyLOL Base Configuration
+# Override in dev.yaml or prod.yaml, or via environment variables
+
+bot:
+  name: polyloly
+  version: "0.1.0"
+  log_level: INFO
+  health_port: 8080
+
+# =============================================================================
+# RISK MANAGEMENT
+# =============================================================================
+risk:
+  # Per-order limits
+  min_order_size: 5.0
+  max_single_order: 100.0
+  max_slippage_bps: 50
+
+  # Per-market limits
+  max_position_per_market: 1500.0
+  max_open_orders_per_market: 5
+  max_leg_imbalance_usdc: 100.0
+  max_leg_imbalance_shares: 50.0
+
+  # Per-market circuit breaker
+  max_consecutive_rejects: 3
+  max_cancel_failures: 3
+  max_order_latency_ms: 5000
+
+  # Correlation limits
+  max_exposure_per_correlation_group: 2000.0
+
+  # Global limits
+  max_total_exposure: 5000.0
+  max_daily_loss: 200.0
+  max_consecutive_global_errors: 5
+
+  # Time-based rules
+  market_open_buffer_minutes: 5
+  market_close_buffer_minutes: 10
+  peak_hours_size_multiplier: 0.5
+  peak_hours_utc:
+    - [14, 16]
+    - [20, 22]
+  weekend_trading_enabled: false
+
+  # Circuit breaker recovery
+  circuit_breaker_recovery_sec: 300
+
+  # Volatility adjustment
+  volatility_lookback_ticks: 50
+
+# =============================================================================
+# STRATEGIES
+# =============================================================================
+strategies:
+  pair_arb:
+    enabled: true
+    pair_cost_cap: 0.975
+    safety_margin: 0.005
+    fee_rate: 0.02
+    step_usdc: 25.0
+    min_order_size: 5.0
+    max_single_order: 100.0
+    max_total_cost: 1500.0
+    max_leg_imbalance_usdc: 100.0
+    max_leg_imbalance_shares: 50.0
+    rebalance_threshold_shares: 20.0
+    prefer_balance: true
+    min_liquidity_usdc: 100.0
+    max_slippage_bps: 50
+
+  temporal_arb:
+    enabled: false  # Enable after testing
+    min_confidence: 0.90
+    min_edge_threshold: 0.05
+    max_entry_price: 0.95
+    kelly_fraction: 0.25
+    min_stake: 10.0
+    max_single_stake: 50.0
+    max_exposure: 200.0
+    stale_threshold_ms: 30000
+    max_source_error_rate: 0.10
+    min_edge_window_ms: 500
+
+# =============================================================================
+# TRUTH ENGINE
+# =============================================================================
+truth_engine:
+  confirm_threshold: 0.90
+  max_wait_ms: 10000
+  required_sources_for_final: 2
+  allowed_skew_ms: 2000
+
+  tier_a_sources:
+    - grid
+    - official_riot
+    - official_valve
+
+  tier_b_sources:
+    - pandascore
+    - opendota
+
+  tier_c_sources:
+    - liquipedia
+
+# =============================================================================
+# TRADING ENGINE
+# =============================================================================
+trading_engine:
+  idle_after_no_opportunity_ticks: 100
+  temporal_signal_ttl_ms: 5000
+  settlement_timeout_ms: 60000
+  auto_recover_from_halt: false
+  halt_recovery_delay_ms: 300000
+
+# =============================================================================
+# EVENT BUS
+# =============================================================================
+event_bus:
+  max_queue_size: 1000
+  overflow_policy: drop  # drop | coalesce | block | halt
+  handler_timeout_ms: 5000
+  max_retry_attempts: 3
+  retry_base_delay_ms: 100
+
+# =============================================================================
+# EXECUTION
+# =============================================================================
+execution:
+  max_slippage_bps: 50
+  warn_slippage_bps: 25
+  order_timeout_ms: 30000
+  cancel_timeout_ms: 10000
+  max_retry_attempts: 3
+  retry_base_delay_ms: 100
+  reconcile_interval_sec: 60
+  position_tolerance: 0.01
+  paper_trading: true
+
+# =============================================================================
+# ADAPTERS
+# =============================================================================
+adapters:
+  polymarket:
+    host: "https://clob.polymarket.com"
+    chain_id: 137
+    rate_limit_per_minute: 100
+    ws_reconnect_delay_sec: 5
+    ws_max_reconnect_delay_sec: 60
+
+  esports:
+    opendota:
+      enabled: true
+      base_url: "https://api.opendota.com/api"
+      poll_interval_ms: 5000
+      rate_limit_per_minute: 60
+
+    pandascore:
+      enabled: false
+      base_url: "https://api.pandascore.co"
+      poll_interval_ms: 3000
+
+    grid:
+      enabled: false
+      ws_url: "wss://live.grid.gg/ws"
+
+    liquipedia:
+      enabled: true
+      base_url: "https://liquipedia.net"
+      user_agent: "PolyLOL/0.1.0 (https://github.com/yourrepo)"
+      poll_interval_sec: 30
+
+# =============================================================================
+# STORAGE
+# =============================================================================
+storage:
+  events_log_path: "logs/events.jsonl"
+  state_snapshot_path: "data/state_snapshot.json"
+  max_log_size_mb: 100
+  log_rotation_count: 5
