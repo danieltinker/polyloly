@@ -174,15 +174,3 @@ Start by designing:
 
 Then implement incrementally.
 
-
-If you want, next we can:
-
-Design the exact repo structure
-
-Write the truth engine state machine
-
-Implement the binary pair arb math module
-
-Or simulate PnL under different safety margins
-
-Just say the word.
